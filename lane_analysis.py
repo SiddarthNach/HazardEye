@@ -1,6 +1,5 @@
-"""
-Advanced Lane Detection System
-"""
+# Advanced Lane Detection System
+# Based on Dt-Pham/Advanced-Lane-Lines repository
 
 import cv2
 import numpy as np
@@ -41,6 +40,7 @@ class Thresholding:
 
 class PerspectiveTransformation:
     def __init__(self):
+        # Fixed coordinates for standard lane detection
         self.src = np.float32([(550, 460), (150, 720), (1200, 720), (770, 460)])
         self.dst = np.float32([(100, 0), (100, 720), (1100, 720), (1100, 0)])
         self.M = cv2.getPerspectiveTransform(self.src, self.dst)
@@ -48,10 +48,12 @@ class PerspectiveTransformation:
 
     def forward(self, img, flags=cv2.INTER_LINEAR):
         height, width = img.shape[:2]
+        # Use the original image size for transformation
         return cv2.warpPerspective(img, self.M, (width, height), flags=flags)
 
     def backward(self, img, flags=cv2.INTER_LINEAR):
         height, width = img.shape[:2]
+        # Use the original image size for transformation
         return cv2.warpPerspective(img, self.M_inv, (width, height), flags=flags)
 
 def hist(img):
@@ -122,14 +124,17 @@ class LaneLines:
     def fit_poly(self, img):
         leftx, lefty, rightx, righty, out_img = self.find_lane_pixels(img)
         
+        # Lower threshold for more forgiving detection
         if len(lefty) > 500:
             self.left_fit = np.polyfit(lefty, leftx, 2)
         elif self.left_fit is None:
+            # Default left lane if none found
             self.left_fit = np.array([0.0002, -0.3, 200])
             
         if len(righty) > 500:
             self.right_fit = np.polyfit(righty, rightx, 2)
         elif self.right_fit is None:
+            # Default right lane if none found
             self.right_fit = np.array([0.0002, -0.3, 1080])
 
         maxy = img.shape[0] - 1
@@ -143,15 +148,16 @@ class LaneLines:
 
         ploty = np.linspace(miny, maxy, img.shape[0])
         
+        # Safe polynomial evaluation with null checks
         if self.left_fit is not None:
             left_fitx = self.left_fit[0]*ploty**2 + self.left_fit[1]*ploty + self.left_fit[2]
         else:
-            left_fitx = np.full_like(ploty, 200)
+            left_fitx = np.full_like(ploty, 200)  # Default left position
             
         if self.right_fit is not None:
             right_fitx = self.right_fit[0]*ploty**2 + self.right_fit[1]*ploty + self.right_fit[2]
         else:
-            right_fitx = np.full_like(ploty, 1080)
+            right_fitx = np.full_like(ploty, 1080)  # Default right position
 
         for i, y in enumerate(ploty):
             l = int(np.clip(left_fitx[i], 0, img.shape[1]-1))
@@ -162,7 +168,9 @@ class LaneLines:
         return out_img
 
     def plot(self, out_img):
+        # Only proceed if we have valid lane fits
         if self.left_fit is None or self.right_fit is None:
+            # Just draw a simple message if no lanes detected
             cv2.putText(out_img, "Lane Detection Initializing...", org=(10, 50), 
                        fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255, 255, 0), thickness=2)
             return out_img
@@ -184,8 +192,8 @@ class LaneLines:
         if len(self.dir) > 10:
             self.dir.pop(0)
 
-        W = min(400, out_img.shape[1])
-        H = min(500, out_img.shape[0])
+        W = min(400, out_img.shape[1])  # Ensure widget doesn't exceed image width
+        H = min(500, out_img.shape[0])  # Ensure widget doesn't exceed image height
         widget = np.copy(out_img[:H, :W])
         widget //= 2
         widget[0,:] = [0, 0, 255]
@@ -210,8 +218,9 @@ class LaneLines:
         return out_img
 
     def measure_curvature(self):
+        # Return safe defaults if no lane fits available
         if self.left_fit is None or self.right_fit is None:
-            return 1000, 1000, 0.0
+            return 1000, 1000, 0.0  # Large radius (straight), centered
             
         ym = 30/720
         xm = 3.7/700
@@ -219,16 +228,17 @@ class LaneLines:
         right_fit = self.right_fit.copy()
         y_eval = 700 * ym
         
+        # Safe division with checks for zero
         left_denom = np.absolute(2*left_fit[0])
         right_denom = np.absolute(2*right_fit[0])
         
         if left_denom < 1e-6:
-            left_curveR = 10000
+            left_curveR = 10000  # Very large radius (essentially straight)
         else:
             left_curveR = ((1 + (2*left_fit[0] *y_eval + left_fit[1])**2)**1.5) / left_denom
             
         if right_denom < 1e-6:
-            right_curveR = 10000
+            right_curveR = 10000  # Very large radius (essentially straight)
         else:
             right_curveR = ((1 + (2*right_fit[0]*y_eval + right_fit[1])**2)**1.5) / right_denom
             
@@ -246,14 +256,17 @@ class FindLaneLines:
     def forward(self, img):
         out_img = np.copy(img)
         
+        # Process the image through the pipeline
         processed_img = self.transform.forward(img)
         processed_img = self.thresholding.forward(processed_img)
         processed_img = self.lanelines.forward(processed_img)
         processed_img = self.transform.backward(processed_img)
         
-        if len(processed_img.shape) == 2:
+        # Ensure both images have same dimensions and channels
+        if len(processed_img.shape) == 2:  # Grayscale to RGB
             processed_img = cv2.cvtColor(processed_img, cv2.COLOR_GRAY2RGB)
         
+        # Make sure dimensions match
         if processed_img.shape != out_img.shape:
             processed_img = cv2.resize(processed_img, (out_img.shape[1], out_img.shape[0]))
         
@@ -262,6 +275,9 @@ class FindLaneLines:
         return out_img
 
     def process_video(self, input_path, output_path):
+        print(f"🎬 Processing video: {input_path}")
+        print(f"📁 Output will be saved to: {output_path}")
+        
         cap = cv2.VideoCapture(input_path)
         if not cap.isOpened():
             raise ValueError(f"Error: Could not open video file {input_path}")
@@ -275,6 +291,7 @@ class FindLaneLines:
         out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
         
         frame_count = 0
+        print(f"📊 Processing {total_frames} frames...")
         
         while True:
             ret, frame = cap.read()
@@ -287,7 +304,43 @@ class FindLaneLines:
             out.write(processed_frame_bgr)
             
             frame_count += 1
+            if frame_count % 50 == 0:
+                progress = (frame_count / total_frames) * 100
+                print(f"  Progress: {frame_count}/{total_frames} ({progress:.1f}%)")
         
         cap.release()
         out.release()
+        print(f"✅ Lane detection video saved to: {output_path}")
         return output_path
+
+def main():
+    if len(sys.argv) > 1:
+        input_path = sys.argv[1]
+    else:
+        input_path = 'videoplayback3.mp4'
+    
+    if not os.path.exists(input_path):
+        print(f"❌ Error: Input file not found at {input_path}")
+        return
+    
+    base_name = os.path.splitext(input_path)[0]
+    output_path = base_name + '_lane_detection.mp4'
+    
+    print(f"📹 Advanced Lane Detection System")
+    print(f"🎯 Based on Dt-Pham/Advanced-Lane-Lines repository")
+    print(f"📂 Input: {input_path}")
+    print(f"📂 Output: {output_path}")
+    
+    findLaneLines = FindLaneLines()
+    
+    try:
+        findLaneLines.process_video(input_path, output_path)
+        print(f"\n✅ SUCCESS: Lane detection completed!")
+        print(f"🎬 Processed video saved to: {output_path}")
+    except Exception as e:
+        print(f"❌ ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+
+if __name__ == "__main__":
+    main()
