@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: hazardeye
+    env: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app.py --server.port=$PORT --server.address=0.0.0.0
+    envVars:
+      - key: AWS_DEFAULT_REGION
+        value: us-east-2
+      - key: S3_BUCKET_NAME
+        value: hazardeye-videos-your-unique-id
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+    autoDeploy: true
+    disk:
+      name: hazardeye-disk
+      mountPath: /opt/render/project/src/temp
+      sizeGB: 1

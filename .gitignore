@@ -156,7 +156,9 @@ datasets/
 *.csv
 *.json
 *.xml
+# Configuration files (exclude secrets, allow deployment configs)
 *.yaml
+!render.yaml
 *.yml
 
 # Compiled files
