@@ -2,7 +2,7 @@ import streamlit as st
 import cv2
 import os
 import boto3
-from utils import analyze_road_safety, save_uploaded_file, create_user_table, add_user, login_user
+from utils_fallback import analyze_road_safety, save_uploaded_file, create_user_table, add_user, login_user
 
 # Initialize session state for analysis
 if 'analysis_result' not in st.session_state:
