@@ -1,0 +1,20 @@
+# HazardEye Deployment Force Update
+# This file forces Render to use the latest code
+
+# Deployment timestamp: 2025-07-27T02:40:22Z
+# Git commit: f46d95b
+# Purpose: Force cache invalidation and use latest app.py with robust imports
+
+# Critical files status:
+# - app.py: Updated with robust import fallback
+# - utils.py: Updated with safe try/catch imports
+# - utils_fallback.py: Production-ready fallback module
+# - requirements.txt: Lightweight without ultralytics
+
+# Expected behavior:
+# 1. App should try utils_fallback first (line 8 in new app.py)
+# 2. If utils_fallback fails, try utils (line 11 in new app.py) 
+# 3. Both modules now have safe imports for ultralytics
+# 4. App should start successfully with OpenCV-based analysis
+
+DEPLOYMENT_FORCE_UPDATE=true
