@@ -5,8 +5,24 @@ import numpy as np
 import sys
 import tempfile
 import streamlit as st
-from ultralytics import YOLO
-from aws_config import AWSConfig
+
+# Try to import ultralytics with fallback
+try:
+    from ultralytics import YOLO
+    YOLO_AVAILABLE = True
+except ImportError:
+    YOLO = None
+    YOLO_AVAILABLE = False
+    print("⚠️ ultralytics not available - pothole detection disabled")
+
+# Try to import AWS config with fallback
+try:
+    from aws_config import AWSConfig
+    AWS_AVAILABLE = True
+except ImportError:
+    AWSConfig = None
+    AWS_AVAILABLE = False
+    print("⚠️ AWS config not available - S3 upload disabled")
 
 # Add the current directory to Python path to import lane_analysis
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -42,13 +58,16 @@ def save_uploaded_file(uploadedfile):
         f.write(uploadedfile.getbuffer())
     
     # Upload to S3 if configured
-    try:
-        aws_config = AWSConfig()
-        s3_key = f"uploads/{uploadedfile.name}"
-        s3_url = aws_config.upload_video_to_s3(local_file_path, s3_key)
-        st.info(f"✅ Video uploaded to S3: {s3_key}")
-    except Exception as e:
-        st.warning(f"⚠️ S3 upload failed: {str(e)}. Using local storage.")
+    if AWS_AVAILABLE:
+        try:
+            aws_config = AWSConfig()
+            s3_key = f"uploads/{uploadedfile.name}"
+            s3_url = aws_config.upload_video_to_s3(local_file_path, s3_key)
+            st.info(f"✅ Video uploaded to S3: {s3_key}")
+        except Exception as e:
+            st.warning(f"⚠️ S3 upload failed: {str(e)}. Using local storage.")
+    else:
+        st.info("📁 File saved locally (AWS S3 not configured)")
     
     return local_file_path
 
@@ -56,6 +75,10 @@ def load_pothole_model():
     """
     Load the trained pothole detection model
     """
+    if not YOLO_AVAILABLE:
+        print("⚠️ YOLO not available - pothole detection disabled")
+        return None
+        
     try:
         # Try to load the best model first, fallback to the main model
         model_paths = [
@@ -83,7 +106,7 @@ def detect_potholes_in_frame(frame, model, confidence_threshold=0.5):
     Returns number of potholes detected and annotated frame
     """
     try:
-        if model is None:
+        if model is None or not YOLO_AVAILABLE:
             return 0, frame
             
         # Run inference
