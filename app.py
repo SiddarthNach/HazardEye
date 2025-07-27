@@ -2,7 +2,18 @@ import streamlit as st
 import cv2
 import os
 import boto3
-from utils_fallback import analyze_road_safety, save_uploaded_file, create_user_table, add_user, login_user
+
+# Robust import - try utils_fallback first, then utils with error handling
+try:
+    from utils_fallback import analyze_road_safety, save_uploaded_file, create_user_table, add_user, login_user
+    print("✅ Using utils_fallback module")
+except ImportError:
+    try:
+        from utils import analyze_road_safety, save_uploaded_file, create_user_table, add_user, login_user
+        print("⚠️ Using utils module (fallback)")
+    except ImportError as e:
+        st.error(f"❌ Could not import required functions: {e}")
+        st.stop()
 
 # Initialize session state for analysis
 if 'analysis_result' not in st.session_state:
