@@ -1,0 +1,183 @@
+# AWS Credentials and Keys
+*.pem
+hazardeye-key.pem
+.aws/
+aws-credentials.csv
+
+# Environment and Configuration Files
+.env
+.env.local
+.env.production
+.env.staging
+*.env
+
+# AWS Configuration
+aws_config.py
+s3-policy.json
+trust-policy.json
+
+# Database Files
+*.db
+*.sqlite
+*.sqlite3
+users.db
+
+# Deployment and Build Files
+hazardeye-deploy.tar.gz
+*.tar.gz
+*.zip
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+.ENV/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+
+# Video files (large files)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wmv
+*.flv
+*.webm
+*.m4v
+*.3gp
+
+# Model files (can be large)
+*.pt
+*.pth
+*.h5
+*.pkl
+*.joblib
+my_model.pt
+train/weights/
+train/*.png
+train/*.jpg
+train/*.csv
+
+# Backup files
+backup.sh
+*.bak
+*.backup
+
+# Node modules (if any)
+node_modules/
+
+# Streamlit
+.streamlit/
+
+# ML/AI specific
+models/
+checkpoints/
+wandb/
+mlruns/
+
+# Data files
+data/
+datasets/
+*.csv
+*.json
+*.xml
+*.yaml
+*.yml
+
+# Compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Packages
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Archives
+*.tar.gz
+*.tgz
+*.tar.bz2
